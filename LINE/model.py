@@ -68,6 +68,6 @@ class LINE(nn.Module):
                 
         negative_sampling = pos_loss + neg_loss
         
-        return negative_sampling
+        return -negative_sampling
         
 
