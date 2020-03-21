@@ -55,7 +55,7 @@ class TrainLINE:
                 
             # epoch마다 embedding vectors의 plot을 뽑음.    
             self.line.eval()
-            Visualization().TSNE(self.line.emd_layer(torch.tensor(range(self.nodes),device=device)).cpu().detach().numpy(),epoch)
+            visualization.Visualization().TSNE(self.line.emd_layer(torch.tensor(range(self.nodes),device=device)).cpu().detach().numpy(),epoch)
             
 
         print("\nDone\n")        
