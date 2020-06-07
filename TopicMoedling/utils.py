@@ -24,7 +24,9 @@ class GraphDataset(Dataset):
         
     def __getitem__(self, index):
         """
+
         target node의 positive sample
+
         """
 
         pos_list = self.pos_samples(index)
@@ -34,7 +36,9 @@ class GraphDataset(Dataset):
             two_hop_list.append(torch.tensor(self.pos_samples(i)))
         
         """
+
         loss에 사용되는 positive sample
+
         """
 
         pos_loss_node = np.random.choice(pos_list, size = 1).tolist()
@@ -43,7 +47,9 @@ class GraphDataset(Dataset):
         for i in pos_loss_node_one_hop:
             pos_loss_node_two_hop.append(torch.tensor(self.pos_samples(i)))
         """
+
         loss에 사용되는 negative samples
+
         """
         neg_list = self.neg_samples(index)
         neg_loss_node_one_hop = []
@@ -53,13 +59,12 @@ class GraphDataset(Dataset):
         neg_loss_node_two_hop = []
         for i in neg_loss_node_one_hop:
             temp = []
-            i = i.tolist()
-            for j in i:
-                temp.append(torch.tensor(self.pos_samples(j)))            
+            for j in i.tolist():
+                temp.append(torch.tensor(self.pos_samples(j)))         
             neg_loss_node_two_hop.append(temp)
                 
-        return torch.tensor([index]), [torch.tensor(pos_list)], [two_hop_list], torch.tensor(pos_loss_node), [torch.tensor(pos_loss_node_one_hop)], [pos_loss_node_two_hop], \
-        torch.tensor(neg_list), [neg_loss_node_one_hop], [neg_loss_node_two_hop]
+        return [index], torch.tensor(pos_list), two_hop_list, pos_loss_node, torch.tensor(pos_loss_node_one_hop), \
+               pos_loss_node_two_hop, neg_list, neg_loss_node_one_hop, neg_loss_node_two_hop
         #return [(index, pos_list, two_hop_list), (pos_loss_node, pos_loss_node_one_hop, pos_loss_node_two_hop), (neg_list, neg_loss_node_one_hop, neg_loss_node_two_hop)]
 
 
@@ -81,16 +86,16 @@ class GraphDataset(Dataset):
 
 def loss_func(target, pos_loss, neg_set):
         EPS = 1e-15
-        pos_loss = torch.dot(target, pos_loss)
-        pos_loss = -torch.log(torch.sigmoid(pos_loss) + self.EPS)
+        pos_loss = torch.dot(target, pos_loss).cuda()
+        pos_loss = -torch.log(torch.sigmoid(pos_loss) + EPS).cuda()
         
-        neg_loss = torch.zeros(1)
+        neg_loss = torch.zeros(1).cuda()
         for i in neg_set:
-            temp = torch.dot(target, i)
-            temp = torch.log(torch.sigmoid(-temp) + self.EPS)
+            temp = torch.dot(target, i.squeeze().cuda())
+            temp = torch.log(torch.sigmoid(-temp) + EPS).cuda()
             neg_loss += temp
 
-        neg_loss = -neg_loss.mean()
+        neg_loss = -neg_loss.mean().cuda()
 
         return pos_loss + neg_loss
 
@@ -125,6 +130,7 @@ def loss_func(target, pos_loss, neg_set):
 #         temp = np.random.choice(temp, size = num_neig, replace = False).tolist()
 
 #         return list(map(lambda i: neg_neighbor[i], idx))
+
 
 
 
@@ -181,3 +187,4 @@ class node_Dataset_ns(Dataset):
 
     def __len__(self):
         return len(self.target)
+
